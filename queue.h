@@ -18,7 +18,9 @@ int8_t queueIsEmpty(const tQueue *q);
 tQueueIdx queueGetNum(const tQueue *q);
 int8_t queueIsFull(const tQueue *q);
 int8_t queuePut(tQueue *q, tQueueData data);
+tQueueIdx queueWrite(tQueue *q, const tQueueData *data, tQueueIdx num);
 int8_t queueGet(tQueue *q, tQueueData *data);
 tQueueData queueGetData(tQueue *q);
+tQueueIdx queueRead(tQueue *q, tQueueData *data, tQueueIdx num);
 
 #endif /* _QUEUE_H_ */

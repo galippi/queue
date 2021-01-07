@@ -20,6 +20,11 @@ int8_t queueInit(tQueue *q, tQueueData *dataPtr, tQueueIdx size)
   q->out = 0;
   q->dataPtr = dataPtr;
   q->size = size;
+  if (size >= (1 << (sizeof(tQueueIdx) * 7)))
+  {
+      QUEUE_CONFIG_ERROR_HANDLER(q);
+      return 1; /* the bit size of tQueueIdx is not enough to store the data */
+  }
   return 0;
 }
 
@@ -61,6 +66,20 @@ int8_t queuePut(tQueue *q, tQueueData data)
   return 0;
 }
 
+tQueueIdx queueWrite(tQueue *q, const tQueueData *data, tQueueIdx num)
+{
+    tQueueIdx written = 0;
+    while (num != 0)
+    {
+        if (queuePut(q, *data) != 0)
+            break;
+        data++;
+        written++;
+        num--;
+    }
+    return written;
+}
+
 int8_t queueGet(tQueue *q, tQueueData *data)
 {
   if (queueIsEmpty(q))
@@ -79,4 +98,18 @@ tQueueData queueGetData(tQueue *q)
     return 0;
   }
   return data;
+}
+
+tQueueIdx queueRead(tQueue *q, tQueueData *data, tQueueIdx num)
+{
+    tQueueIdx readNum = 0;
+    while (num != 0)
+    {
+        if (queueGet(q, data) != 0)
+            break;
+        data++;
+        readNum++;
+        num--;
+    }
+    return readNum;
 }

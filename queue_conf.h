@@ -13,4 +13,6 @@ typedef struct sQueue tQueue; /* forward declaration */
 void queueEmptyErrorHandler(const tQueue *q);
 #define QUEUE_EMPTY_ERROR_HANDLER(q) queueEmptyErrorHandler(q)
 
+#define QUEUE_CONFIG_ERROR_HANDLER(q) /* do nothing */
+
 #endif /* _QUEUE_CONF_H_ */
