@@ -36,6 +36,12 @@ static const char *print(const char *pszFormat, ...)
 #define TestCaseAssertNeq(valLeft, valRight) \
         TestCaseAssertTrue((valLeft) == (valRight), print("valLeft=%d == valRight=%d", valLeft,valRight))
 
+#define TestSuiteExecute(name) \
+{ \
+    fprintf(stdout, "Executing test suite %s!\n", #name); \
+    name(); \
+}
+
 #define NUM_OF(array) (sizeof(array)/sizeof(array[0]))
 
 void queueEmptyErrorHandler(const tQueue *q)
@@ -156,7 +162,7 @@ static void testSuite0(void)
 static void testSuite1(void)
 {
     tQueue q;
-    tQueueData dataArray[32];
+    tQueueData dataArray[127];
     tQueueData data;
     TestCaseAssertEq(queueInit(&q, dataArray, NUM_OF(dataArray)), 0);
     TestCaseAssertEq(queueGetNum(&q), 0);
@@ -227,13 +233,65 @@ static void testSuite1(void)
     TestCaseAssertEq(q.out, 0);
 }
 
+static void testSuite2(void)
+{
+    tQueue q;
+    tQueueData dataArray0[127];
+    TestCaseAssertEq(queueInit(&q, dataArray0, NUM_OF(dataArray0)), 0);
+
+    tQueueData dataArray1[128];
+    TestCaseAssertEq(queueInit(&q, dataArray1, NUM_OF(dataArray1)), 1);
+}
+
+static void testSuite3(void)
+{
+    tQueue q;
+    tQueueData dataArray[127];
+    tQueueData data[16];
+    TestCaseAssertEq(queueInit(&q, dataArray, NUM_OF(dataArray)), 0);
+    TestCaseAssertEq(queueRead(&q, data, NUM_OF(data)), 0);
+    TestCaseAssertEq(queuePut(&q, 0), 0);
+    TestCaseAssertEq(queueRead(&q, data, NUM_OF(data)), 1);
+    TestCaseAssertEq(data[0], 0);
+    TestCaseAssertEq(queuePut(&q, 2), 0);
+    TestCaseAssertEq(queuePut(&q, 4), 0);
+    TestCaseAssertEq(queueRead(&q, data, NUM_OF(data)), 2);
+    TestCaseAssertEq(data[0], 2);
+    TestCaseAssertEq(data[1], 4);
+    data[0] = 3; data[1] = 6; data[2] = 9; data[3] = 12;
+    TestCaseAssertEq(queueWrite(&q, data, 4), 4);
+    memset(data, 0, sizeof(data));
+    TestCaseAssertEq(queueRead(&q, data, NUM_OF(data)), 4);
+    TestCaseAssertEq(data[0], 3);
+    TestCaseAssertEq(data[1], 6);
+    TestCaseAssertEq(data[2], 9);
+    TestCaseAssertEq(data[3], 12);
+    TestCaseAssertEq(queueWrite(&q, data, NUM_OF(data)), NUM_OF(data));
+    TestCaseAssertEq(queueRead(&q, data, NUM_OF(data)), NUM_OF(data));
+    TestCaseAssertEq(queueGetNum(&q), 0);
+    for (tQueueData idx = 0; idx < NUM_OF(dataArray)/NUM_OF(data); idx++)
+    {
+        TestCaseAssertEq(queueWrite(&q, data, NUM_OF(data)), NUM_OF(data));
+    }
+    TestCaseAssertEq(queueWrite(&q, data, NUM_OF(data)), NUM_OF(dataArray) % NUM_OF(data));
+    TestCaseAssertEq(queueGetNum(&q), NUM_OF(dataArray));
+    for (tQueueData idx = 0; idx < NUM_OF(dataArray)/NUM_OF(data); idx++)
+    {
+        TestCaseAssertEq(queueRead(&q, data, NUM_OF(data)), NUM_OF(data));
+    }
+    TestCaseAssertEq(queueRead(&q, data, NUM_OF(data)), NUM_OF(dataArray) % NUM_OF(data));
+    TestCaseAssertEq(queueGetNum(&q), 0);
+}
+
 int main(int argc, const char **argv)
 {
   (void)argc;
   (void)argv;
 
-  testSuite0();
-  testSuite1();
+  TestSuiteExecute(testSuite0);
+  TestSuiteExecute(testSuite1);
+  TestSuiteExecute(testSuite2);
+  TestSuiteExecute(testSuite3);
 
   printf("All tests are done!\n");
   printf("Executed test cases: %5d\n", testCaseCnt);
