@@ -1,6 +1,19 @@
 
 #include "queue.h"
 
+INLINE tQueueIdx queueNextIdx(const tQueue *q, tQueueIdx idx)
+{
+    tQueueIdx newIdx = idx + 1;
+    if (newIdx == (q->size * 2))
+        newIdx = 0;
+    return newIdx;
+}
+
+INLINE tQueueIdx queueArrayIdx(const tQueue *q, tQueueIdx idx)
+{
+    return idx % q->size;
+}
+
 int8_t queueInit(tQueue *q, tQueueData *dataPtr, tQueueIdx size)
 {
   q->in = 0;
@@ -41,11 +54,8 @@ int8_t queuePut(tQueue *q, tQueueData data)
 {
   if (queueIsFull(q))
     return 1;
-  tQueueIdx newIdx = q->in + 1;
-  if (newIdx == (q->size * 2))
-    newIdx = 0;
-  q->dataPtr[q->in % q->size] = data;
-  q->in = newIdx;
+  q->dataPtr[queueArrayIdx(q, q->in)] = data;
+  q->in = queueNextIdx(q, q->in);;
   return 0;
 }
 
@@ -53,11 +63,8 @@ int8_t queueGet(tQueue *q, tQueueData *data)
 {
   if (queueIsEmpty(q))
     return 1;
-  tQueueIdx newIdx = q->out + 1;
-  if (newIdx == (q->size * 2))
-    newIdx = 0;
-  *data = q->dataPtr[q->out % q->size];
-  q->out = newIdx;
+  *data = q->dataPtr[queueArrayIdx(q, q->out)];
+  q->out = queueNextIdx(q, q->out);
   return 0;
 }
 

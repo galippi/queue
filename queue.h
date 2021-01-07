@@ -3,10 +3,9 @@
 
 #include <stdint.h>
 
-typedef uint8_t tQueueIdx;
-typedef uint8_t tQueueData;
+#include "queue_conf.h"
 
-typedef struct
+typedef struct sQueue
 {
   tQueueIdx in;
   tQueueIdx out;
@@ -21,8 +20,5 @@ int8_t queueIsFull(const tQueue *q);
 int8_t queuePut(tQueue *q, tQueueData data);
 int8_t queueGet(tQueue *q, tQueueData *data);
 tQueueData queueGetData(tQueue *q);
-
-void queueEmptyErrorHandler(const tQueue *q);
-#define QUEUE_EMPTY_ERROR_HANDLER(q) queueEmptyErrorHandler(q)
 
 #endif /* _QUEUE_H_ */
