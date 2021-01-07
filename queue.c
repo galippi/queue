@@ -11,7 +11,7 @@ INLINE tQueueIdx queueNextIdx(const tQueue *q, tQueueIdx idx)
 
 INLINE tQueueIdx queueArrayIdx(const tQueue *q, tQueueIdx idx)
 {
-    return idx % q->size;
+    return ((idx < q->size) ? idx : (idx - q->size));
 }
 
 int8_t queueInit(tQueue *q, tQueueData *dataPtr, tQueueIdx size)
@@ -30,8 +30,8 @@ int8_t queueIsEmpty(const tQueue *q)
 
 tQueueIdx queueGetNum(const tQueue *q)
 {
-  tQueueIdx num = q->out - q->in;
-  if (q->out >= q->in)
+  tQueueIdx num = q->in - q->out;
+  if (q->in >= q->out)
   {
       if (num > q->size)
           num -= q->size;
@@ -40,6 +40,8 @@ tQueueIdx queueGetNum(const tQueue *q)
     num = num + q->size;
     if (num == 0)
       num = q->size;
+    else if (num > q->size)
+        num = num + q->size;
   }
   return num;
 }
