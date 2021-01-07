@@ -36,6 +36,8 @@ static const char *print(const char *pszFormat, ...)
 #define TestCaseAssertNeq(valLeft, valRight) \
         TestCaseAssertTrue((valLeft) == (valRight), print("valLeft=%d == valRight=%d", valLeft,valRight))
 
+#define NUM_OF(array) (sizeof(array)/sizeof(array[0]))
+
 void queueEmptyErrorHandler(const tQueue *q)
 {
     (void)q;
@@ -48,7 +50,7 @@ static void testSuite0(void)
     tQueue q;
     tQueueData dataArray[2];
     tQueueData data;
-    TestCaseAssertEq(queueInit(&q, dataArray, sizeof(dataArray) / sizeof(dataArray[0])), 0);
+    TestCaseAssertEq(queueInit(&q, dataArray, NUM_OF(dataArray)), 0);
     TestCaseAssertEq(queueGetNum(&q), 0);
     TestCaseAssertEq(queueIsEmpty(&q), 1);
     TestCaseAssertEq(queueIsFull(&q), 0);
@@ -151,12 +153,87 @@ static void testSuite0(void)
     TestCaseAssertEq(q.out, 2);
 }
 
+static void testSuite1(void)
+{
+    tQueue q;
+    tQueueData dataArray[32];
+    tQueueData data;
+    TestCaseAssertEq(queueInit(&q, dataArray, NUM_OF(dataArray)), 0);
+    TestCaseAssertEq(queueGetNum(&q), 0);
+    TestCaseAssertEq(queueIsEmpty(&q), 1);
+    TestCaseAssertEq(queueIsFull(&q), 0);
+    TestCaseAssertEq(queueGet(&q, &data), 1);
+
+    for (tQueueData idx = 0; idx < NUM_OF(dataArray); idx++)
+    {
+        //printf("testSuite1 put idx=%u\n", (unsigned)idx);
+        TestCaseAssertEq(queuePut(&q, idx), 0);
+        TestCaseAssertEq(queueGetNum(&q), idx + 1);
+        TestCaseAssertEq(queueIsEmpty(&q), 0);
+        if (idx < (NUM_OF(dataArray) - 1))
+        {
+            TestCaseAssertEq(queueIsFull(&q), 0);
+        }
+        TestCaseAssertEq(q.in, idx + 1);
+        TestCaseAssertEq(q.out, 0);
+    }
+    TestCaseAssertEq(queueIsFull(&q), 1);
+
+    for (tQueueData idx = 0; idx < NUM_OF(dataArray); idx++)
+    {
+        //printf("testSuite1 get idx=%u\n", (unsigned)idx);
+        TestCaseAssertEq(queueGetData(&q), idx);
+        TestCaseAssertEq(queueGetNum(&q), NUM_OF(dataArray) - idx - 1);
+        if (idx < (NUM_OF(dataArray) - 1))
+        {
+            TestCaseAssertEq(queueIsEmpty(&q), 0);
+        }
+        TestCaseAssertEq(queueIsFull(&q), 0);
+        TestCaseAssertEq(q.in, NUM_OF(dataArray));
+        TestCaseAssertEq(q.out, idx + 1);
+    }
+    TestCaseAssertEq(queueIsEmpty(&q), 1);
+
+    for (tQueueData idx = 0; idx < NUM_OF(dataArray); idx++)
+    {
+        //printf("testSuite1 put idx=%u\n", (unsigned)idx);
+        TestCaseAssertEq(queuePut(&q, idx), 0);
+        TestCaseAssertEq(queueGetNum(&q), idx + 1);
+        TestCaseAssertEq(queueIsEmpty(&q), 0);
+        if (idx < (NUM_OF(dataArray) - 1))
+        {
+            TestCaseAssertEq(queueIsFull(&q), 0);
+            TestCaseAssertEq(q.in, NUM_OF(dataArray) + idx + 1);
+        }
+        TestCaseAssertEq(q.out, NUM_OF(dataArray));
+    }
+    TestCaseAssertEq(queueIsFull(&q), 1);
+    TestCaseAssertEq(q.in, 0);
+
+    for (tQueueData idx = 0; idx < NUM_OF(dataArray); idx++)
+    {
+        //printf("testSuite1 get idx=%u\n", (unsigned)idx);
+        TestCaseAssertEq(queueGetData(&q), idx);
+        TestCaseAssertEq(queueGetNum(&q), NUM_OF(dataArray) - idx - 1);
+        if (idx < (NUM_OF(dataArray) - 1))
+        {
+            TestCaseAssertEq(queueIsEmpty(&q), 0);
+            TestCaseAssertEq(q.out, NUM_OF(dataArray) + idx + 1);
+        }
+        TestCaseAssertEq(queueIsFull(&q), 0);
+        TestCaseAssertEq(q.in, 0);
+    }
+    TestCaseAssertEq(queueIsEmpty(&q), 1);
+    TestCaseAssertEq(q.out, 0);
+}
+
 int main(int argc, const char **argv)
 {
   (void)argc;
   (void)argv;
 
   testSuite0();
+  testSuite1();
 
   printf("All tests are done!\n");
   printf("Executed test cases: %5d\n", testCaseCnt);
