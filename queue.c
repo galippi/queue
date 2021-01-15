@@ -11,14 +11,18 @@ INLINE tQueueIdx queueNextIdx(const tQueue *q, tQueueIdx idx)
 
 INLINE tQueueIdx queueArrayIdx(const tQueue *q, tQueueIdx idx)
 {
-    (void)q;
-    return idx;
+    tQueueIdx arrayIdx = idx;
+    if (arrayIdx >= q->sizeData)
+        arrayIdx -= (q->sizeData);
+    return arrayIdx;
 }
 
 int8_t queueInit(const tQueue *q)
 {
   q->idxPtr->in = 0;
+  q->idxPtr->inData = 0;
   q->idxPtr->out = 0;
+  q->idxPtr->outData = 0;
   return 0;
 }
 
@@ -30,11 +34,11 @@ int8_t queueIsEmpty(const tQueue *q)
 tQueueIdx queueGetNum(const tQueue *q)
 {
   uint32_t num = q->idxPtr->in - q->idxPtr->out;
-  if (num >= q->size)
+  if (num > q->size)
   {
       num = num + q->size;
   }
-  return num;
+  return (tQueueIdx)num;
 }
 
 int8_t queueIsFull(const tQueue *q)
@@ -46,7 +50,8 @@ int8_t queuePut(const tQueue *q, tQueueData data)
 {
   if (queueIsFull(q))
     return 1;
-  q->dataPtr[queueArrayIdx(q, q->idxPtr->in)] = data;
+  q->dataPtr[q->idxPtr->inData] = data;
+  q->idxPtr->inData = queueArrayIdx(q, q->idxPtr->inData + 1);
   q->idxPtr->in = queueNextIdx(q, q->idxPtr->in);
   return 0;
 }
@@ -69,7 +74,8 @@ int8_t queueGet(const tQueue *q, tQueueData *data)
 {
   if (queueIsEmpty(q))
     return 1;
-  *data = q->dataPtr[queueArrayIdx(q, q->idxPtr->out)];
+  *data = q->dataPtr[q->idxPtr->outData];
+  q->idxPtr->outData = queueArrayIdx(q, q->idxPtr->outData + 1);
   q->idxPtr->out = queueNextIdx(q, q->idxPtr->out);
   return 0;
 }

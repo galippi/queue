@@ -53,7 +53,7 @@ void queueEmptyErrorHandler(const tQueue *q)
 
 static void testSuite0(void)
 {
-    QUEUE_CREATE(q, 3)
+    QUEUE_CREATE(q, 2)
     tQueueData data;
     TestCaseAssertEq(queueInit(&q), 0);
     TestCaseAssertEq(queueGetNum(&q), 0);
@@ -169,13 +169,13 @@ static void testSuite1(void)
     TestCaseAssertEq(queueIsFull(&q), 0);
     TestCaseAssertEq(queueGet(&q, &data), 1);
 
-    for (tQueueData idx = 0; idx < dataArrayNum - 1; idx++)
+    for (tQueueData idx = 0; idx < dataArrayNum; idx++)
     {
         //printf("testSuite1 put idx=%u\n", (unsigned)idx);
         TestCaseAssertEq(queuePut(&q, idx), 0);
         TestCaseAssertEq(queueGetNum(&q), idx + 1);
         TestCaseAssertEq(queueIsEmpty(&q), 0);
-        if (idx < (dataArrayNum - 2))
+        if (idx < (dataArrayNum - 1))
         {
             TestCaseAssertEq(queueIsFull(&q), 0);
         }
@@ -184,52 +184,52 @@ static void testSuite1(void)
     }
     TestCaseAssertEq(queueIsFull(&q), 1);
 
-    for (tQueueData idx = 0; idx < dataArrayNum - 1; idx++)
+    for (tQueueData idx = 0; idx < dataArrayNum; idx++)
     {
         //printf("testSuite1 get idx=%u\n", (unsigned)idx);
         TestCaseAssertEq(queueGetData(&q), idx);
-        TestCaseAssertEq(queueGetNum(&q), dataArrayNum - idx - 2);
-        if (idx < (dataArrayNum - 2))
+        TestCaseAssertEq(queueGetNum(&q), dataArrayNum - idx - 1);
+        if (idx < (dataArrayNum - 1))
         {
             TestCaseAssertEq(queueIsEmpty(&q), 0);
         }
         TestCaseAssertEq(queueIsFull(&q), 0);
-        TestCaseAssertEq(queueGetIn(&q), dataArrayNum - 1);
+        TestCaseAssertEq(queueGetIn(&q), dataArrayNum);
         TestCaseAssertEq(queueGetOut(&q), idx + 1);
     }
     TestCaseAssertEq(queueIsEmpty(&q), 1);
 
-    for (tQueueData idx = 0; idx < dataArrayNum - 1; idx++)
+    for (tQueueData idx = 0; idx < dataArrayNum; idx++)
     {
         //printf("testSuite1 put idx=%u\n", (unsigned)idx);
         TestCaseAssertEq(queuePut(&q, idx), 0);
         TestCaseAssertEq(queueGetNum(&q), idx + 1);
         TestCaseAssertEq(queueIsEmpty(&q), 0);
-        if (idx < (dataArrayNum - 2))
+        if (idx < (dataArrayNum - 1))
         {
             TestCaseAssertEq(queueIsFull(&q), 0);
             TestCaseAssertEq(queueGetIn(&q), idx);
         }
-        TestCaseAssertEq(queueGetOut(&q), dataArrayNum - 1);
+        TestCaseAssertEq(queueGetOut(&q), dataArrayNum);
     }
     TestCaseAssertEq(queueIsFull(&q), 1);
-    TestCaseAssertEq(queueGetIn(&q), dataArrayNum - 2);
+    TestCaseAssertEq(queueGetIn(&q), dataArrayNum - 1);
 
-    for (tQueueData idx = 0; idx < dataArrayNum - 1; idx++)
+    for (tQueueData idx = 0; idx < dataArrayNum; idx++)
     {
         //printf("testSuite1 get idx=%u\n", (unsigned)idx);
         TestCaseAssertEq(queueGetData(&q), idx);
-        TestCaseAssertEq(queueGetNum(&q), dataArrayNum - idx - 2);
-        if (idx < (dataArrayNum - 2))
+        TestCaseAssertEq(queueGetNum(&q), dataArrayNum - idx - 1);
+        if (idx < (dataArrayNum - 1))
         {
             TestCaseAssertEq(queueIsEmpty(&q), 0);
             TestCaseAssertEq(queueGetOut(&q), idx);
         }
         TestCaseAssertEq(queueIsFull(&q), 0);
-        TestCaseAssertEq(queueGetIn(&q), dataArrayNum - 2);
+        TestCaseAssertEq(queueGetIn(&q), dataArrayNum - 1);
     }
     TestCaseAssertEq(queueIsEmpty(&q), 1);
-    TestCaseAssertEq(queueGetOut(&q), dataArrayNum - 2);
+    TestCaseAssertEq(queueGetOut(&q), dataArrayNum - 1);
 }
 
 static void testSuite2(void)
@@ -264,17 +264,17 @@ static void testSuite3(void)
     TestCaseAssertEq(queueWrite(&q, data, NUM_OF(data)), NUM_OF(data));
     TestCaseAssertEq(queueRead(&q, data, NUM_OF(data)), NUM_OF(data));
     TestCaseAssertEq(queueGetNum(&q), 0);
-    for (tQueueData idx = 0; idx < (dataArrayNum - 1)/NUM_OF(data); idx++)
+    for (tQueueData idx = 0; idx < (dataArrayNum)/NUM_OF(data); idx++)
     {
         TestCaseAssertEq(queueWrite(&q, data, NUM_OF(data)), NUM_OF(data));
     }
-    TestCaseAssertEq(queueWrite(&q, data, NUM_OF(data)), (dataArrayNum - 1) % NUM_OF(data));
-    TestCaseAssertEq(queueGetNum(&q), dataArrayNum - 1);
-    for (tQueueData idx = 0; idx < (dataArrayNum - 1)/NUM_OF(data); idx++)
+    TestCaseAssertEq(queueWrite(&q, data, NUM_OF(data)), (dataArrayNum) % NUM_OF(data));
+    TestCaseAssertEq(queueGetNum(&q), dataArrayNum);
+    for (tQueueData idx = 0; idx < (dataArrayNum)/NUM_OF(data); idx++)
     {
         TestCaseAssertEq(queueRead(&q, data, NUM_OF(data)), NUM_OF(data));
     }
-    TestCaseAssertEq(queueRead(&q, data, NUM_OF(data)), (dataArrayNum - 1) % NUM_OF(data));
+    TestCaseAssertEq(queueRead(&q, data, NUM_OF(data)), (dataArrayNum) % NUM_OF(data));
     TestCaseAssertEq(queueGetNum(&q), 0);
 }
 
