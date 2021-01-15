@@ -29,14 +29,10 @@ int8_t queueIsEmpty(const tQueue *q)
 
 tQueueIdx queueGetNum(const tQueue *q)
 {
-  tQueueIdx in = q->idxPtr->in, out = q->idxPtr->out;
-  tQueueIdx num;
-  if (in >= out)
+  uint32_t num = q->idxPtr->in - q->idxPtr->out;
+  if (num >= q->size)
   {
-      num = in - out;
-  }else
-  { /*   if (num > q->size) */
-    num = q->size - out + in;
+      num = num + q->size;
   }
   return num;
 }
