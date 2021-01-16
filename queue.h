@@ -5,6 +5,8 @@
 
 #include "queue_conf.h"
 
+typedef uint8_t tQueueIdx;
+
 typedef struct
 {
   tQueueIdx in;
