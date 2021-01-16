@@ -5,7 +5,6 @@
 
 #define INLINE static inline
 
-typedef uint8_t tQueueIdx;
 typedef uint8_t tQueueData;
 
 typedef struct sQueue tQueue; /* forward declaration */
