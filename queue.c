@@ -3,15 +3,15 @@
 
 INLINE tQueueIdx queueNextIdx(const tQueue *q, tQueueIdx idx)
 {
+    (void)q;
     tQueueIdx newIdx = idx + 1;
-    if (newIdx == (q->size * 2))
-        newIdx = 0;
     return newIdx;
 }
 
 INLINE tQueueIdx queueArrayIdx(const tQueue *q, tQueueIdx idx)
 {
-    return ((idx < q->size) ? idx : (idx - q->size));
+    (void)q;
+    return ((idx < 128) ? idx : (idx - 128));
 }
 
 int8_t queueInit(tQueue *q, tQueueData *dataPtr, tQueueIdx size)
@@ -19,8 +19,7 @@ int8_t queueInit(tQueue *q, tQueueData *dataPtr, tQueueIdx size)
   q->in = 0;
   q->out = 0;
   q->dataPtr = dataPtr;
-  q->size = size;
-  if (size >= (1 << (sizeof(tQueueIdx) * 7)))
+  if (size != 128)
   {
       QUEUE_CONFIG_ERROR_HANDLER(q);
       return 1; /* the bit size of tQueueIdx is not enough to store the data */
@@ -38,15 +37,15 @@ tQueueIdx queueGetNum(const tQueue *q)
   tQueueIdx num = q->in - q->out;
   if (q->in >= q->out)
   {
-      if (num > q->size)
-          num -= q->size;
+      if (num > 128)
+          num -= 128;
   }else
   { /*   if (num > q->size) */
-    num = num + q->size;
+    num = num + 128;
     if (num == 0)
-      num = q->size;
-    else if (num > q->size)
-        num = num + q->size;
+      num = 128;
+    else if (num > 128)
+        num = num + 128;
   }
   return num;
 }
@@ -54,7 +53,7 @@ tQueueIdx queueGetNum(const tQueue *q)
 int8_t queueIsFull(const tQueue *q)
 {
   tQueueIdx num = queueGetNum(q);
-  return (num == q->size);
+  return (num == 128);
 }
 
 int8_t queuePut(tQueue *q, tQueueData data)
