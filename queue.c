@@ -35,18 +35,6 @@ int8_t queueIsEmpty(const tQueue *q)
 tQueueIdx queueGetNum(const tQueue *q)
 {
   tQueueIdx num = q->in - q->out;
-  if (q->in >= q->out)
-  {
-      if (num > 128)
-          num -= 128;
-  }else
-  { /*   if (num > q->size) */
-    num = num + 128;
-    if (num == 0)
-      num = 128;
-    else if (num > 128)
-        num = num + 128;
-  }
   return num;
 }
 
