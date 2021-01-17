@@ -54,7 +54,7 @@ TARGET_DIR=obj/
 #CPPFILES+= osm_xml.cpp
 #CFILES    = $(TARGET).c
 #CFILES   += debug.c
-CFILES   += main.c
+CFILES   += queue_test.c
 CFILES   += queue.c
 
 #SUBDIRS := debug
