@@ -1,0 +1,24 @@
+The purpose of this library is to provide a thread safe queue implementation for different requirements.
+The thread safe means:
+- the 2 direction operations (put/get) can be used in different threads
+- one direction operation can be used only from the same thread or in different time
+- no thread-lock is used to improve its performance
+
+The requirements are opposit to easch other, therefore it's impossible to provide one universal solution:
+- run time (queue handling and data handling)
+- small footprint (mainly for RAM)
+
+Different solutions are implemented in branches:
+Ver_DoubleIndex128:
+This solution has the smallest RAM/ROM footprint and it has the best run-time performance, but it can be used only for special size of queues (for 128 or 32768 elements), but all queue elements can bu used
+This solution uses the special hanlding of the queue indexes: both indexes uses the double range of the data area range, therefore it does not need an extra info for signaling the full state (it uses 1-1 bit in the index counter). But because the special size of the queue, therefore we can use the simplified handling of the overflow of the index counters.
+
+Ver_DoubleIndex:
+This solution has the 2nd smallest RAM footprint and it has good run-time performance, but it can be used only for limited size of queues (for 1...127 or 256...32767 elements)
+This solution uses the special hanlding of the queue indexes: both indexes uses the double range of the data area range, therefore it does not need an extra info for signaling the full state (it uses 1-1 bit in the index counter). The data number calculation needs an extra effort.
+
+Ver_ExtraDataStore:
+This solution uses one data element to separate the empty and full queue state, therefrore this is an optimal solution for queue size of 129...255 and 32769...65535 and the data size is 8 bit.
+
+Ver_ExtraIndex:
+This solution uses double indexes (one for data, and another for data number administration), therefrore this is an optimal solution for queue size of 129...255 and 32769...65535 and the data size is larger than 8 bit.
