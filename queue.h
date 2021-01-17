@@ -26,9 +26,9 @@ int8_t queueInit(const tQueue *q);
 int8_t queueIsEmpty(const tQueue *q);
 tQueueIdx queueGetNum(const tQueue *q);
 int8_t queueIsFull(const tQueue *q);
-int8_t queuePut(const tQueue *q, tQueueData data);
+tQueueIdx queuePutIdx(const tQueue *q);
 tQueueIdx queueWrite(const tQueue *q, const tQueueData *data, tQueueIdx num);
-int8_t queueGet(const tQueue *q, tQueueData *data);
+tQueueIdx queueGetIdx(const tQueue *q);
 tQueueData queueGetData(const tQueue *q);
 tQueueIdx queueRead(const tQueue *q, tQueueData *data, tQueueIdx num);
 
@@ -41,6 +41,24 @@ INLINE tQueueIdx queueGetIn(const tQueue *q)
 INLINE tQueueIdx queueGetOut(const tQueue *q)
 {
     return q->idxPtr->out;
+}
+
+INLINE int8_t queuePut(const tQueue *q, tQueueData data)
+{
+    tQueueIdx idx = queuePutIdx(q);
+    if (idx == 255)
+        return 1;
+    q->dataPtr[idx] = data;
+    return 0;
+}
+
+INLINE int8_t queueGet(const tQueue *q, tQueueData *data)
+{
+    tQueueIdx idx = queueGetIdx(q);
+    if (idx == 255)
+        return 1;
+    *data = q->dataPtr[idx];
+    return 0;
 }
 
 #endif /* _QUEUE_H_ */
