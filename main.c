@@ -34,7 +34,7 @@ static const char *print(const char *pszFormat, ...)
         TestCaseAssertTrue((valLeft) == (valRight), print("valLeft=%d != valRight=%d", valLeft,valRight))
 
 #define TestCaseAssertNeq(valLeft, valRight) \
-        TestCaseAssertTrue((valLeft) == (valRight), print("valLeft=%d == valRight=%d", valLeft,valRight))
+        TestCaseAssertTrue((valLeft) != (valRight), print("valLeft=%d == valRight=%d", valLeft,valRight))
 
 #define TestSuiteExecute(name) \
 { \
@@ -160,7 +160,7 @@ static void testSuite0(void)
 
 static void testSuite1(void)
 {
-    const unsigned dataArrayNum = 127;
+    const unsigned dataArrayNum = 128;
     QUEUE_CREATE(q, dataArrayNum)
     tQueueData data;
     TestCaseAssertEq(queueInit(&q), 0);
@@ -172,6 +172,7 @@ static void testSuite1(void)
     for (tQueueData idx = 0; idx < dataArrayNum; idx++)
     {
         //printf("testSuite1 put idx=%u\n", (unsigned)idx);
+        TestCaseAssertEq(queueGetNum(&q), idx);
         TestCaseAssertEq(queuePut(&q, idx), 0);
         TestCaseAssertEq(queueGetNum(&q), idx + 1);
         TestCaseAssertEq(queueIsEmpty(&q), 0);
@@ -183,6 +184,7 @@ static void testSuite1(void)
         TestCaseAssertEq(queueGetOut(&q), 0);
     }
     TestCaseAssertEq(queueIsFull(&q), 1);
+    TestCaseAssertEq(queuePut(&q, 0), 1);
 
     for (tQueueData idx = 0; idx < dataArrayNum; idx++)
     {
@@ -198,10 +200,13 @@ static void testSuite1(void)
         TestCaseAssertEq(queueGetOut(&q), idx + 1);
     }
     TestCaseAssertEq(queueIsEmpty(&q), 1);
+    TestCaseAssertEq(queueIsFull(&q), 0);
+    //TestCaseAssertEq(queuePut(&q, 0), 1);
 
     for (tQueueData idx = 0; idx < dataArrayNum; idx++)
     {
         //printf("testSuite1 put idx=%u\n", (unsigned)idx);
+        TestCaseAssertEq(queueGetNum(&q), idx);
         TestCaseAssertEq(queuePut(&q, idx), 0);
         TestCaseAssertEq(queueGetNum(&q), idx + 1);
         TestCaseAssertEq(queueIsEmpty(&q), 0);
@@ -230,6 +235,85 @@ static void testSuite1(void)
     }
     TestCaseAssertEq(queueIsEmpty(&q), 1);
     TestCaseAssertEq(queueGetOut(&q), 0);
+
+    /* testing shifted access */
+    TestCaseAssertEq(queuePut(&q, 0), 0);
+    TestCaseAssertEq(queuePut(&q, 0), 0);
+    TestCaseAssertEq(queuePut(&q, 0), 0);
+    TestCaseAssertEq(queueGetNum(&q), 3);
+    TestCaseAssertEq(queueIsEmpty(&q), 0);
+    TestCaseAssertEq(queueGetIn(&q), 3);
+    TestCaseAssertEq(queueGetOut(&q), 0);
+    TestCaseAssertEq(queueGetData(&q), 0);
+    TestCaseAssertEq(queueGetData(&q), 0);
+    TestCaseAssertEq(queueGetData(&q), 0);
+    TestCaseAssertEq(queueGetNum(&q), 0);
+    TestCaseAssertEq(queueIsEmpty(&q), 1);
+    TestCaseAssertEq(queueGetIn(&q), 3);
+    TestCaseAssertEq(queueGetOut(&q), 3);
+
+    for (tQueueData idx = 0; idx < dataArrayNum; idx++)
+    {
+        //printf("testSuite1 put idx=%u\n", (unsigned)idx);
+        TestCaseAssertEq(queueGetNum(&q), idx);
+        TestCaseAssertEq(queuePut(&q, idx), 0);
+        TestCaseAssertEq(queueGetNum(&q), idx + 1);
+        TestCaseAssertEq(queueIsEmpty(&q), 0);
+        if (idx < (dataArrayNum - 1))
+        {
+            TestCaseAssertEq(queueIsFull(&q), 0);
+        }
+    }
+    TestCaseAssertEq(queueIsFull(&q), 1);
+    TestCaseAssertEq(queueGetIn(&q), 3 + dataArrayNum);
+    TestCaseAssertEq(queueGetOut(&q), 3);
+
+    for (tQueueData idx = 0; idx < dataArrayNum; idx++)
+    {
+        //printf("testSuite1 get idx=%u\n", (unsigned)idx);
+        TestCaseAssertEq(queueGetData(&q), idx);
+        TestCaseAssertEq(queueGetNum(&q), dataArrayNum - idx - 1);
+        if (idx < (dataArrayNum - 1))
+        {
+            TestCaseAssertEq(queueIsEmpty(&q), 0);
+        }
+        TestCaseAssertEq(queueIsFull(&q), 0);
+    }
+    TestCaseAssertEq(queueIsEmpty(&q), 1);
+    TestCaseAssertEq(queueGetIn(&q), 3 + dataArrayNum);
+    TestCaseAssertEq(queueGetOut(&q), 3 + dataArrayNum);
+
+    for (tQueueData idx = 0; idx < dataArrayNum; idx++)
+    {
+        //printf("testSuite1 put idx=%u\n", (unsigned)idx);
+        TestCaseAssertEq(queueGetNum(&q), idx);
+        TestCaseAssertEq(queuePut(&q, idx), 0);
+        TestCaseAssertEq(queueGetNum(&q), idx + 1);
+        TestCaseAssertEq(queueIsEmpty(&q), 0);
+        if (idx < (dataArrayNum - 1))
+        {
+            TestCaseAssertEq(queueIsFull(&q), 0);
+        }
+    }
+    TestCaseAssertEq(queueIsFull(&q), 1);
+    TestCaseAssertEq(queueGetIn(&q), 3);
+    TestCaseAssertEq(queueGetOut(&q), 3 + dataArrayNum);
+
+    for (tQueueData idx = 0; idx < dataArrayNum; idx++)
+    {
+        //printf("testSuite1 get idx=%u\n", (unsigned)idx);
+        TestCaseAssertEq(queueGetData(&q), idx);
+        TestCaseAssertEq(queueGetNum(&q), dataArrayNum - idx - 1);
+        if (idx < (dataArrayNum - 1))
+        {
+            TestCaseAssertEq(queueIsEmpty(&q), 0);
+        }
+        TestCaseAssertEq(queueIsFull(&q), 0);
+    }
+    TestCaseAssertEq(queueIsEmpty(&q), 1);
+    TestCaseAssertEq(queueGetIn(&q), 3);
+    TestCaseAssertEq(queueGetOut(&q), 3);
+
 }
 
 static void testSuite2(void)
@@ -238,7 +322,10 @@ static void testSuite2(void)
     TestCaseAssertEq(queueInit(&q0), 0);
 
     QUEUE_CREATE(q1, 128)
-    TestCaseAssertEq(queueInit(&q1), 1);
+    TestCaseAssertEq(queueInit(&q1), 0);
+
+    QUEUE_CREATE(q2, 129)
+    TestCaseAssertEq(queueInit(&q2), 1);
 }
 
 static void testSuite3(void)
@@ -281,6 +368,219 @@ static void testSuite3(void)
     TestCaseAssertEq(queueGetNum(&q), 0);
 }
 
+#define MEMCPY(dst, ...) \
+do { \
+    tQueueData __data[] = {__VA_ARGS__}; \
+    memcpy(dst, __data, sizeof(__data)); \
+}while(0)
+
+static void testSuite4(void)
+{
+    const unsigned dataArrayNum = 5;
+    QUEUE_CREATE(q, dataArrayNum)
+    TestCaseAssertEq(queueInit(&q), 0);
+    TestCaseAssertEq(queueIsEmpty(&q), 1);
+    TestCaseAssertEq(queueIsFull(&q), 0);
+
+    tQueueData dataW[16];
+    //tQueueData dataR[16];
+    MEMCPY(dataW, 1, 2, 3);
+    TestCaseAssertEq(queueWrite(&q, dataW, 3), 3);
+    TestCaseAssertEq(queueIsEmpty(&q), 0);
+    TestCaseAssertEq(queueIsFull(&q), 0);
+    tQueueIdx num = 5;
+    tQueueData *drPtr = queueGetDataBuffer(&q, &num);
+    TestCaseAssertNeq(drPtr, NULL);
+    TestCaseAssertEq(num, 3);
+    TestCaseAssertEq(memcmp(dataW, drPtr, 3), 0);
+    TestCaseAssertEq(queueIsEmpty(&q), 0);
+    TestCaseAssertEq(queueIsFull(&q), 0);
+
+    tQueueData dataW1[16];
+    MEMCPY(dataW1, 6, 5);
+    TestCaseAssertEq(queueWrite(&q, dataW1, 2), 2);
+    TestCaseAssertEq(queueIsFull(&q), 1);
+    num = 5;
+    drPtr = queueGetDataBuffer(&q, &num);
+    TestCaseAssertNeq(drPtr, NULL);
+    TestCaseAssertEq(num, 5);
+    TestCaseAssertEq(memcmp(dataW, drPtr, 3), 0);
+    TestCaseAssertEq(memcmp(dataW1, drPtr + 3, 2), 0);
+    TestCaseAssertEq(queueIsFull(&q), 1);
+
+    TestCaseAssertEq(queueRemoveData(&q, 1), 0);
+    TestCaseAssertEq(queueIsFull(&q), 0);
+    num = 5;
+    drPtr = queueGetDataBuffer(&q, &num);
+    TestCaseAssertNeq(drPtr, NULL);
+    TestCaseAssertEq(num, 4);
+    TestCaseAssertEq(memcmp(dataW + 1, drPtr, 2), 0);
+    TestCaseAssertEq(memcmp(dataW1, drPtr + 2, 2), 0);
+
+    // 4 bytes (1..4) in the queue
+    TestCaseAssertEq(queuePut(&q, 22), 0);
+    TestCaseAssertEq(queueIsFull(&q), 1);
+    num = 5;
+    drPtr = queueGetDataBuffer(&q, &num);
+    TestCaseAssertNeq(drPtr, NULL);
+    TestCaseAssertEq(num, 4);
+    TestCaseAssertEq(memcmp(dataW + 1, drPtr, 2), 0);
+    TestCaseAssertEq(memcmp(dataW1, drPtr + 2, 2), 0);
+    TestCaseAssertEq(queueIsFull(&q), 1);
+
+    // 5 bytes (1..5) in the queue
+    TestCaseAssertEq(queueRemoveData(&q, 1), 0);
+    TestCaseAssertEq(queueIsFull(&q), 0);
+    drPtr = queueGetDataBuffer(&q, &num);
+    TestCaseAssertNeq(drPtr, NULL);
+    TestCaseAssertEq(num, 3);
+    TestCaseAssertEq(memcmp(dataW + 2, drPtr, 1), 0);
+    TestCaseAssertEq(memcmp(dataW1, drPtr + 1, 2), 0);
+
+    // 4 bytes (2..5) in the queue
+    TestCaseAssertEq(queueRemoveData(&q, 3), 0);
+    TestCaseAssertEq(queueIsFull(&q), 0);
+    drPtr = queueGetDataBuffer(&q, &num);
+    TestCaseAssertNeq(drPtr, NULL);
+    TestCaseAssertEq(num, 1);
+    TestCaseAssertEq(*drPtr, 22);
+    TestCaseAssertEq(queueGetIn(&q), 6);
+    TestCaseAssertEq(queueGetOut(&q), 5);
+
+    // 1 bytes (5..5) in the queue
+    MEMCPY(dataW, 11, 12, 13, 14);
+    TestCaseAssertEq(queueWrite(&q, dataW, 4), 4);
+    TestCaseAssertEq(queueIsEmpty(&q), 0);
+    TestCaseAssertEq(queueIsFull(&q), 1);
+    num = 5;
+    drPtr = queueGetDataBuffer(&q, &num);
+    TestCaseAssertNeq(drPtr, NULL);
+    TestCaseAssertEq(num, 5);
+    TestCaseAssertEq(*drPtr, 22);
+    TestCaseAssertEq(memcmp(dataW, drPtr + 1, 4), 0);
+    TestCaseAssertEq(queueIsEmpty(&q), 0);
+    TestCaseAssertEq(queueIsFull(&q), 1);
+
+    // 5 bytes (5..9) in the queue
+    TestCaseAssertEq(queueRemoveData(&q, 1), 0);
+    TestCaseAssertEq(queueIsEmpty(&q), 0);
+    TestCaseAssertEq(queueIsFull(&q), 0);
+    num = 5;
+    drPtr = queueGetDataBuffer(&q, &num);
+    TestCaseAssertNeq(drPtr, NULL);
+    TestCaseAssertEq(num, 4);
+    TestCaseAssertEq(memcmp(dataW, drPtr, 4), 0);
+
+    // 4 bytes (6..9) in the queue
+    TestCaseAssertEq(queuePut(&q, 33), 0);
+    TestCaseAssertEq(queueIsFull(&q), 1);
+    num = 5;
+    drPtr = queueGetDataBuffer(&q, &num);
+    TestCaseAssertNeq(drPtr, NULL);
+    TestCaseAssertEq(num, 4);
+    TestCaseAssertEq(memcmp(dataW, drPtr, 4), 0);
+
+    // 5 bytes (6..9 and 0..0) in the queue
+    TestCaseAssertEq(queueRemoveData(&q, 2), 0);
+    // 1 bytes (0..0) in the queue
+    TestCaseAssertEq(queueIsEmpty(&q), 0);
+    TestCaseAssertEq(queueIsFull(&q), 0);
+    num = 5;
+    drPtr = queueGetDataBuffer(&q, &num);
+    TestCaseAssertNeq(drPtr, NULL);
+    TestCaseAssertEq(num, 2);
+    TestCaseAssertEq(memcmp(dataW + 2, drPtr, 2), 0);
+
+    // 3 bytes (8..9 and 0..0) in the queue
+    TestCaseAssertEq(queueRemoveData(&q, 2), 0);
+    // 1 bytes (0..0) in the queue
+    TestCaseAssertEq(queueIsEmpty(&q), 0);
+    TestCaseAssertEq(queueIsFull(&q), 0);
+    num = 5;
+    drPtr = queueGetDataBuffer(&q, &num);
+    TestCaseAssertNeq(drPtr, NULL);
+    TestCaseAssertEq(num, 1);
+    TestCaseAssertEq(drPtr[0], 33);
+
+    // 1 bytes (0..0) in the queue
+    MEMCPY(dataW, 11, 12, 13, 14);
+    TestCaseAssertEq(queueWrite(&q, dataW, 4), 4);
+    TestCaseAssertEq(queueIsEmpty(&q), 0);
+    TestCaseAssertEq(queueIsFull(&q), 1);
+    num = 6;
+    drPtr = queueGetDataBuffer(&q, &num);
+    TestCaseAssertNeq(drPtr, NULL);
+    TestCaseAssertEq(num, 5);
+    TestCaseAssertEq(drPtr[0], 33);
+    TestCaseAssertEq(memcmp(dataW , drPtr + 1, 4), 0);
+
+    // 5 bytes (0..4) in the queue
+    TestCaseAssertEq(queueRemoveData(&q, 2), 0);
+    TestCaseAssertEq(queueIsEmpty(&q), 0);
+    TestCaseAssertEq(queueIsFull(&q), 0);
+    num = 6;
+    drPtr = queueGetDataBuffer(&q, &num);
+    TestCaseAssertNeq(drPtr, NULL);
+    TestCaseAssertEq(num, 3);
+    TestCaseAssertEq(memcmp(dataW + 1, drPtr, 3), 0);
+
+    // 3 bytes (2..4) in the queue
+    TestCaseAssertEq(queueRemoveData(&q, 3), 0);
+    TestCaseAssertEq(queueIsEmpty(&q), 1);
+    TestCaseAssertEq(queueIsFull(&q), 0);
+    num = 6;
+    drPtr = queueGetDataBuffer(&q, &num);
+    TestCaseAssertEq(drPtr, NULL);
+    TestCaseAssertEq(num, 0);
+
+    // 0 bytes (q pos 5) in the queue
+    MEMCPY(dataW, 11, 12, 13, 14);
+    TestCaseAssertEq(queueWrite(&q, dataW, 4), 4);
+    TestCaseAssertEq(queueIsEmpty(&q), 0);
+    TestCaseAssertEq(queueIsFull(&q), 0);
+    num = 6;
+    drPtr = queueGetDataBuffer(&q, &num);
+    TestCaseAssertNeq(drPtr, NULL);
+    TestCaseAssertEq(num, 4);
+    TestCaseAssertEq(memcmp(dataW , drPtr, 4), 0);
+
+    // 4 bytes (5..8) in the queue
+    TestCaseAssertEq(queueRemoveData(&q, 3), 0);
+    // 1 bytes (8..8) in the queue
+    TestCaseAssertEq(queueIsEmpty(&q), 0);
+    TestCaseAssertEq(queueIsFull(&q), 0);
+    num = 6;
+    drPtr = queueGetDataBuffer(&q, &num);
+    TestCaseAssertNeq(drPtr, NULL);
+    TestCaseAssertEq(num, 1);
+
+    // 1 bytes (8..8) in the queue
+    MEMCPY(dataW, 11, 12, 13, 14);
+    // 5 bytes (8..9 and 0..2) in the queue
+    TestCaseAssertEq(queueWrite(&q, dataW, 4), 4);
+    TestCaseAssertEq(queueIsEmpty(&q), 0);
+    TestCaseAssertEq(queueIsFull(&q), 1);
+    num = 6;
+    drPtr = queueGetDataBuffer(&q, &num);
+    TestCaseAssertNeq(drPtr, NULL);
+    TestCaseAssertEq(num, 2);
+    TestCaseAssertEq(memcmp(dataW , drPtr + 1, 1), 0);
+
+    // 5 bytes (8..9 and 0..2) in the queue
+    TestCaseAssertEq(queueRemoveData(&q, 3), 0);
+    // 2 bytes (1..2) in the queue
+    TestCaseAssertEq(queueIsEmpty(&q), 0);
+    TestCaseAssertEq(queueIsFull(&q), 0);
+    num = 6;
+    drPtr = queueGetDataBuffer(&q, &num);
+    TestCaseAssertNeq(drPtr, NULL);
+    TestCaseAssertEq(num, 2);
+    TestCaseAssertEq(memcmp(dataW + 2, drPtr, 2), 0);
+
+    //TestCaseAssertEq(queueGetIn(&q), 1);
+    //TestCaseAssertEq(queueGetOut(&q), 0);
+}
+
 int main(int argc, const char **argv)
 {
   (void)argc;
@@ -290,6 +590,7 @@ int main(int argc, const char **argv)
   TestSuiteExecute(testSuite1);
   TestSuiteExecute(testSuite2);
   TestSuiteExecute(testSuite3);
+  TestSuiteExecute(testSuite4);
 
   printf("All tests are done!\n");
   printf("Executed test cases: %5d\n", testCaseCnt);
