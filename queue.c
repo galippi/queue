@@ -25,11 +25,6 @@ int8_t queueInit(const tQueue *q)
   return 0;
 }
 
-int8_t queueIsEmpty(const tQueue *q)
-{
-  return (q->idxPtr->in == q->idxPtr->out);
-}
-
 tQueueIdx queueGetNum(const tQueue *q)
 {
   tQueueIdx in = q->idxPtr->in, out = q->idxPtr->out;
@@ -64,16 +59,64 @@ int8_t queuePut(const tQueue *q, tQueueData data)
   return 0;
 }
 
+static tQueueData *queueGetInDataPtr(const tQueue *q, tQueueIdx *num)
+{
+    tQueueData *result;
+    tQueueIdx avail;
+    if (q->idxPtr->in < q->size) {
+        result = &q->dataPtr[q->idxPtr->in];
+        if (q->idxPtr->out <= q->idxPtr->in)
+            avail = q->size - q->idxPtr->in;
+        else
+            avail = q->idxPtr->out - q->idxPtr->in;
+    }else{ /* (q->idxPtr->in >= q->size) */
+        result = &q->dataPtr[q->idxPtr->in - q->size];
+        avail = (2 * q->size) - q->idxPtr->in;
+    }
+    if (avail < *num)
+        *num = avail;
+    if (avail == 0)
+        result = NULL;
+    return result;
+}
+
+static tQueueIdx queueUpdateInDataPtr(const tQueue *q, tQueueIdx num)
+{
+    do {
+        tQueueIdx avail;
+        avail = q->idxPtr->out - q->idxPtr->in;
+        if (avail == 0)
+            avail = q->size;
+        else
+        if (avail > q->size)
+            avail = (2 * q->size) - q->idxPtr->in;
+        if (avail > num)
+            avail = num;
+        if (avail == 0)
+            break;
+        q->idxPtr->in += avail;
+        if (q->idxPtr->in == (2 * q->size))
+            q->idxPtr->in = 0;
+        num -= avail;
+    }while(num != 0);
+    return num;
+}
+
 tQueueIdx queueWrite(const tQueue *q, const tQueueData *data, tQueueIdx num)
 {
     tQueueIdx written = 0;
-    while (num != 0)
+    while (1)
     {
-        if (queuePut(q, *data) != 0)
+        tQueueIdx available = num;
+        tQueueData *dataPtr = queueGetInDataPtr(q, &available);
+        if (available == 0)
             break;
-        data++;
-        written++;
-        num--;
+        memcpy(dataPtr, data, available * sizeof(tQueueData));
+        tQueueIdx remain = queueUpdateInDataPtr(q, available);
+        assert_lw(ASSERT_UT, remain == 0);
+        written += available;
+        data += available;
+        num -= available;
     }
     return written;
 }
