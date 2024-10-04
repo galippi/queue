@@ -1,5 +1,13 @@
 #include "queue.h"
 
+INLINE tQueueIdx minIdx(tQueueIdx left, tQueueIdx right)
+{
+    if (left <= right)
+        return left;
+    else
+        return right;
+}
+
 INLINE tQueueIdx queueNextIdx(const tQueue *q, tQueueIdx idx)
 {
     tQueueIdx newIdx = idx + 1;
@@ -65,13 +73,16 @@ static tQueueData *queueGetInDataPtr(const tQueue *q, tQueueIdx *num)
     tQueueIdx avail;
     if (q->idxPtr->in < q->size) {
         result = &q->dataPtr[q->idxPtr->in];
-        if (q->idxPtr->out <= q->idxPtr->in)
+        if (q->idxPtr->out == q->idxPtr->in)
             avail = q->size - q->idxPtr->in;
         else
             avail = q->idxPtr->out - q->idxPtr->in;
     }else{ /* (q->idxPtr->in >= q->size) */
         result = &q->dataPtr[q->idxPtr->in - q->size];
-        avail = (2 * q->size) - q->idxPtr->in;
+        if (q->idxPtr->out <= q->idxPtr->in) {
+            avail = minIdx(q->idxPtr->out + q->size - q->idxPtr->in, (2 * q->size) - q->idxPtr->in);
+        }else
+            avail = q->idxPtr->out - q->idxPtr->in;
     }
     if (avail < *num)
         *num = avail;
@@ -153,14 +164,6 @@ tQueueIdx queueRead(const tQueue *q, tQueueData *data, tQueueIdx num)
         num--;
     }
     return readNum;
-}
-
-INLINE tQueueIdx minIdx(tQueueIdx left, tQueueIdx right)
-{
-    if (left <= right)
-        return left;
-    else
-        return right;
 }
 
 tQueueData *queueGetDataBuffer(const tQueue *q, tQueueIdx *num)
