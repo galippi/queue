@@ -24,7 +24,6 @@ typedef struct sQueue
     const tQueue q = {q##_data, &q##_idx, size};
 
 int8_t queueInit(const tQueue *q);
-int8_t queueIsEmpty(const tQueue *q);
 tQueueIdx queueGetNum(const tQueue *q);
 int8_t queueIsFull(const tQueue *q);
 int8_t queuePut(const tQueue *q, tQueueData data);
@@ -34,6 +33,11 @@ tQueueData queueGetData(const tQueue *q);
 tQueueIdx queueRead(const tQueue *q, tQueueData *data, tQueueIdx num);
 tQueueData *queueGetDataBuffer(const tQueue *q, tQueueIdx *num);
 int8_t queueRemoveData(const tQueue *q, tQueueIdx num);
+
+INLINE int8_t queueIsEmpty(const tQueue *q)
+{
+  return (q->idxPtr->in == q->idxPtr->out);
+}
 
 /* functions for unit testing */
 INLINE tQueueIdx queueGetIn(const tQueue *q)
