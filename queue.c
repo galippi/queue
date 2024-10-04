@@ -1,5 +1,3 @@
-#include <memory.h>
-
 #include "queue.h"
 
 INLINE tQueueIdx queueNextIdx(const tQueue *q, tQueueIdx idx)
