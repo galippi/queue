@@ -482,7 +482,7 @@ static void testSuite4(void)
 
     // 5 bytes (6..9 and 0..0) in the queue
     TestCaseAssertEq(queueRemoveData(&q, 2), 0);
-    // 1 bytes (0..0) in the queue
+    // 3 bytes (8..9 and 0..0) in the queue
     TestCaseAssertEq(queueIsEmpty(&q), 0);
     TestCaseAssertEq(queueIsFull(&q), 0);
     num = 5;
@@ -556,8 +556,8 @@ static void testSuite4(void)
 
     // 1 bytes (8..8) in the queue
     MEMCPY(dataW, 11, 12, 13, 14);
-    // 5 bytes (8..9 and 0..2) in the queue
     TestCaseAssertEq(queueWrite(&q, dataW, 4), 4);
+    // 5 bytes (8..9 and 0..2) in the queue
     TestCaseAssertEq(queueIsEmpty(&q), 0);
     TestCaseAssertEq(queueIsFull(&q), 1);
     num = 6;
