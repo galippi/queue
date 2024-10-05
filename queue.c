@@ -125,6 +125,7 @@ tQueueIdx queueWrite(const tQueue *q, const tQueueData *data, tQueueIdx num)
         memcpy(dataPtr, data, available * sizeof(tQueueData));
         tQueueIdx remain = queueUpdateInDataPtr(q, available);
         assert_lw(ASSERT_UT, remain == 0);
+        (void)remain;
         written += available;
         data += available;
         num -= available;
