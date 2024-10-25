@@ -75,16 +75,15 @@ static tQueueData *queueGetInDataPtr(const tQueue *q, tQueueIdx *num)
     tQueueIdx avail;
     if (q->idxPtr->in < q->size) {
         result = &q->dataPtr[q->idxPtr->in];
-        if (q->idxPtr->out == q->idxPtr->in)
             avail = q->size - q->idxPtr->in;
-        else
-            avail = q->idxPtr->out - q->idxPtr->in;
     }else{ /* (q->idxPtr->in >= q->size) */
-        result = &q->dataPtr[q->idxPtr->in - q->size];
-        if (q->idxPtr->out <= q->idxPtr->in) {
-            avail = minIdx(q->idxPtr->out + q->size - q->idxPtr->in, (2 * q->size) - q->idxPtr->in);
-        }else
-            avail = q->idxPtr->out - q->idxPtr->in;
+        tQueueIdx buffIdx = q->idxPtr->in - q->size;
+        result = &q->dataPtr[buffIdx];
+        tQueueIdx rest = (2 * q->size) - q->idxPtr->in;
+        if (q->idxPtr->out == q->idxPtr->in)
+            avail = rest;
+        else
+            avail = minIdx(q->idxPtr->out - buffIdx, rest);
     }
     if (avail < *num)
         *num = avail;
@@ -118,8 +117,7 @@ static tQueueIdx queueUpdateInDataPtr(const tQueue *q, tQueueIdx num)
 tQueueIdx queueWrite(const tQueue *q, const tQueueData *data, tQueueIdx num)
 {
     tQueueIdx written = 0;
-    while (1)
-    {
+    do {
         tQueueIdx available = num;
         tQueueData *dataPtr = queueGetInDataPtr(q, &available);
         if (available == 0)
@@ -130,7 +128,7 @@ tQueueIdx queueWrite(const tQueue *q, const tQueueData *data, tQueueIdx num)
         written += available;
         data += available;
         num -= available;
-    }
+    } while (num > 0);
     return written;
 }
 
