@@ -581,6 +581,66 @@ static void testSuite4(void)
     //TestCaseAssertEq(queueGetOut(&q), 0);
 }
 
+static void testSuite5(void)
+{
+    const unsigned queueSize = 5;
+    const int writeArraySize = 3;
+
+    QUEUE_CREATE(q, queueSize)
+    TestCaseAssertEq(queueInit(&q), 0);
+    TestCaseAssertEq(queueIsEmpty(&q), 1);
+    TestCaseAssertEq(queueIsFull(&q), 0);
+
+    TestCaseAssertEq(queuePut(&q, 255), 0);
+
+    tQueueData dataW[writeArraySize];
+    tQueueData dataR[queueSize];
+    for(int i = 0; i < 1000; i++) {
+        for(int j = 0; j < writeArraySize; j++) {
+            dataW[j] = ((i * 3) + j) & 0xFF;
+        }
+        TestCaseAssertEq(queueWrite(&q, dataW, writeArraySize), writeArraySize);
+        TestCaseAssertEq(queueIsEmpty(&q), 0);
+        TestCaseAssertEq(queueIsFull(&q), 0);
+
+        TestCaseAssertEq(queueRead(&q, dataR, writeArraySize), writeArraySize);
+        for(int j = 0; j < writeArraySize; j++) {
+            //printf("%d - %d\n", i, j);
+            TestCaseAssertEq(dataR[j], ((i * 3) + j - 1) & 0xFF);
+        }
+    }
+}
+
+static void testSuite6(void)
+{
+    const unsigned queueSize = 3;
+    const int writeArraySize = 2;
+
+    QUEUE_CREATE(q, queueSize)
+    TestCaseAssertEq(queueInit(&q), 0);
+    TestCaseAssertEq(queueIsEmpty(&q), 1);
+    TestCaseAssertEq(queueIsFull(&q), 0);
+
+    TestCaseAssertEq(queuePut(&q, 255), 0);
+
+    tQueueData dataW[writeArraySize];
+    tQueueData dataR[queueSize];
+    for(int i = 0; i < 20; i++) {
+        for(int j = 0; j < writeArraySize; j++) {
+            dataW[j] = ((i * writeArraySize) + j) & 0xFF;
+        }
+        TestCaseAssertEq(queueWrite(&q, dataW, writeArraySize), writeArraySize);
+        TestCaseAssertEq(queueIsEmpty(&q), 0);
+        TestCaseAssertEq(queueIsFull(&q), 1);
+
+        TestCaseAssertEq(queueRead(&q, dataR, writeArraySize), writeArraySize);
+        for(int j = 0; j < writeArraySize; j++) {
+            //printf("%d - %d\n", i, j);
+            TestCaseAssertEq(dataR[j], ((i * writeArraySize) + j - 1) & 0xFF);
+        }
+    }
+}
+
 int main(int argc, const char **argv)
 {
   (void)argc;
@@ -591,6 +651,8 @@ int main(int argc, const char **argv)
   TestSuiteExecute(testSuite2);
   TestSuiteExecute(testSuite3);
   TestSuiteExecute(testSuite4);
+  TestSuiteExecute(testSuite5);
+  TestSuiteExecute(testSuite6);
 
   printf("All tests are done!\n");
   printf("Executed test cases: %5d\n", testCaseCnt);
