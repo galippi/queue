@@ -621,8 +621,6 @@ static void testSuite6(void)
     TestCaseAssertEq(queueIsEmpty(&q), 1);
     TestCaseAssertEq(queueIsFull(&q), 0);
 
-    TestCaseAssertEq(queuePut(&q, 255), 0);
-
     tQueueData dataW[writeArraySize];
     tQueueData dataR[queueSize];
     for(int i = 0; i < 20; i++) {
@@ -631,13 +629,60 @@ static void testSuite6(void)
         }
         TestCaseAssertEq(queueWrite(&q, dataW, writeArraySize), writeArraySize);
         TestCaseAssertEq(queueIsEmpty(&q), 0);
-        TestCaseAssertEq(queueIsFull(&q), 1);
+        TestCaseAssertEq(queueIsFull(&q), 0);
 
-        TestCaseAssertEq(queueRead(&q, dataR, writeArraySize), writeArraySize);
+        TestCaseAssertEq(queueRead(&q, dataR, queueSize), writeArraySize);
         for(int j = 0; j < writeArraySize; j++) {
             //printf("%d - %d\n", i, j);
-            TestCaseAssertEq(dataR[j], ((i * writeArraySize) + j - 1) & 0xFF);
+            TestCaseAssertEq(dataR[j], ((i * writeArraySize) + j) & 0xFF);
         }
+        TestCaseAssertEq(queueIsEmpty(&q), 1);
+        TestCaseAssertEq(queueIsFull(&q), 0);
+    }
+}
+
+static void testSuite7(void)
+{
+    const unsigned queueSize = 9;
+    const int writeArraySize = 5;
+
+    QUEUE_CREATE(q, queueSize)
+    TestCaseAssertEq(queueInit(&q), 0);
+    TestCaseAssertEq(queueIsEmpty(&q), 1);
+    TestCaseAssertEq(queueIsFull(&q), 0);
+
+    tQueueData dataW[writeArraySize];
+    for(int i = 0; i < 2000; i++) {
+        for(int j = 0; j < writeArraySize; j++) {
+            dataW[j] = ((i * writeArraySize) + j) & 0xFF;
+        }
+        TestCaseAssertEq(queueWrite(&q, dataW, writeArraySize), writeArraySize);
+        TestCaseAssertEq(queueIsEmpty(&q), 0);
+        TestCaseAssertEq(queueIsFull(&q), 0);
+
+        tQueueIdx num = writeArraySize;
+        tQueueData *ptr = queueGetDataBuffer(&q, &num);
+        TestCaseAssertTrue(num <= writeArraySize, "err");
+        for(int j = 0; j < num; j++) {
+            //printf("%d - %d\n", i, j);
+            TestCaseAssertEq(ptr[j], ((i * writeArraySize) + j) & 0xFF);
+        }
+        TestCaseAssertEq(queueRemoveData(&q, num), 0);
+        if (num < writeArraySize)
+        {
+          TestCaseAssertEq(queueIsEmpty(&q), 0);
+          TestCaseAssertEq(queueIsFull(&q), 0);
+          tQueueIdx num2 = writeArraySize - num;
+          ptr = queueGetDataBuffer(&q, &num2);
+          TestCaseAssertEq((num + num2), writeArraySize);
+          for(int j = num; j < writeArraySize; j++) {
+              //printf("%d - %d\n", i, j);
+              TestCaseAssertEq(ptr[j - num], ((i * writeArraySize) + j) & 0xFF);
+          }
+          TestCaseAssertEq(queueRemoveData(&q, num2), 0);
+        }
+        TestCaseAssertEq(queueIsEmpty(&q), 1);
+        TestCaseAssertEq(queueIsFull(&q), 0);
     }
 }
 
@@ -653,6 +698,7 @@ int main(int argc, const char **argv)
   TestSuiteExecute(testSuite4);
   TestSuiteExecute(testSuite5);
   TestSuiteExecute(testSuite6);
+  TestSuiteExecute(testSuite7);
 
   printf("All tests are done!\n");
   printf("Executed test cases: %5d\n", testCaseCnt);
