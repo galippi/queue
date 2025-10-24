@@ -2,3 +2,4 @@ obj/*
 _cmd.bat
 build.bat
 _t.bat
+*.bak
