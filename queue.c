@@ -165,6 +165,15 @@ tQueueIdx queueRead(const tQueue *q, tQueueData *data, tQueueIdx num)
     return readNum;
 }
 
+/**
+ * queueGetDataBuffer
+ * Get a direct access to the data pointer of the queue
+ * @param q - pointer to queue object
+ * @param num - pointer to number of items, which can be accessed in linear way,
+ *              if it's 0, then all available data will be available
+ *              it will give back the number of data, which can be read from the buffer
+ * @return pointer to the data buffer
+ */
 tQueueData *queueGetDataBuffer(const tQueue *q, tQueueIdx *num)
 {
     tQueueIdx avail;
@@ -185,7 +194,7 @@ tQueueData *queueGetDataBuffer(const tQueue *q, tQueueIdx *num)
         else
             ret = &q->dataPtr[q->idxPtr->out - q->size];
     }
-    if (avail > *num)
+    if ((*num != 0) && (avail > *num))
         avail = *num;
     *num = avail;
     return ret;
